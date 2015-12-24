@@ -11,13 +11,13 @@ uint8_t *decoded,*data;
 uint8_t * output[COLUMN/4*5];
 uint32_t row[COLUMN/4*5];
 void init(){
-	int i;
-	decoded = (uint8_t *)malloc(DATA_SIZE);
-	data = (uint8_t *)malloc(DATA_SIZE);
+    int i;
+    decoded = (uint8_t *)malloc(DATA_SIZE);
+    data = (uint8_t *)malloc(DATA_SIZE);
 
-	for(i=0;i<COLUMN/4*5;i++)
-		output[i] = (uint8_t *)malloc(DATA_SIZE/COLUMN),row[i]=i;
-	ec_method_initialize();
+    for(i=0;i<COLUMN/4*5;i++)
+        output[i] = (uint8_t *)malloc(DATA_SIZE/COLUMN),row[i]=i;
+    ec_method_initialize();
     
 
    for(i=0;i<DATA_SIZE;i++)
@@ -27,13 +27,13 @@ void init(){
 
 int main(int argc,char *argv[]){
 
-	int i,j,times;
-	size_t size;
-	struct timeval begin,end,result;
-	double total_time;
+    int i,j,times;
+    size_t size;
+    struct timeval begin,end,result;
+    double total_time;
 
 
-	init();
+    init();
     printf("Finish init\n");
 
     gettimeofday(&begin,NULL);
@@ -53,7 +53,7 @@ int main(int argc,char *argv[]){
     gettimeofday(&end,NULL);
     timersub(&end,&begin,&result);
 
-	printf("%sencode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
+    printf("%sencode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
     for(i=0;i<100;i++){
         printf("%d :",i*10);
         for(j=0;j<10;j++)
@@ -73,7 +73,7 @@ int main(int argc,char *argv[]){
     gettimeofday(&end,NULL);
     timersub(&end,&begin,&result);
 
-	printf("%sdecode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
+    printf("%sdecode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
 
     for(i=0;i<10;i++){
         printf("%d :",i*10);
@@ -84,5 +84,5 @@ int main(int argc,char *argv[]){
 
 
 
-	return 0;
+    return 0;
 }
