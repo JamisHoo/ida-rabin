@@ -7,9 +7,11 @@
 #include <sys/sysinfo.h>
 #define DATA_SIZE (1<<24)
 #define COLUMN (64)
+
 uint8_t *decoded,*data;
 uint8_t * output[COLUMN/4*5];
 uint32_t row[COLUMN/4*5];
+
 void init(){
     int i;
     decoded = (uint8_t *)malloc(DATA_SIZE);
@@ -24,9 +26,7 @@ void init(){
         data[i] = rand()%256;
 }
 
-
 int main(int argc,char *argv[]){
-
     int i,j,times;
     size_t size;
     struct timeval begin,end,result;
@@ -37,14 +37,7 @@ int main(int argc,char *argv[]){
     printf("Finish init\n");
 
     gettimeofday(&begin,NULL);
-/*    for (i = 0; i < COLUMN/4*5; i++) {
-         if(argc > 1 && !strcmp(argv[1],"-p"))
-            size = ec_method_parallel_encode(DATA_SIZE, COLUMN, i, data, output[i],get_nprocs());
-         else
-            size = ec_method_encode(DATA_SIZE, COLUMN, i, data, output[i]);
 
-    }
-*/
     if(argc > 1 && !strcmp(argv[1],"-p"))
         size = ec_method_batch_parallel_encode(DATA_SIZE, COLUMN, COLUMN/4*5, data, output,get_nprocs());
      else
@@ -54,15 +47,15 @@ int main(int argc,char *argv[]){
     timersub(&end,&begin,&result);
 
     printf("%sencode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
+
+    /*
     for(i=0;i<100;i++){
         printf("%d :",i*10);
         for(j=0;j<10;j++)
             printf("%x:%x ",output[1][i*10+j],output[2][i*10+j]);
         printf("\n");
     }
-
-
-
+    */
 
     gettimeofday(&begin,NULL);
     if(argc > 1 && !strcmp(argv[1],"-p"))
@@ -75,12 +68,19 @@ int main(int argc,char *argv[]){
 
     printf("%sdecode cost:%ld.%06lds\n",(argc>1 && !strcmp(argv[1],"-p")?"parallel ":""),result.tv_sec,result.tv_usec);
 
+    /*
     for(i=0;i<10;i++){
         printf("%d :",i*10);
         for(j=0;j<10;j++)
             printf("%x:%x ",data[i*10+j],decoded[i*10+j]);
         printf("\n");
     }
+    */
+
+    if (memcmp(data, decoded, DATA_SIZE)) 
+        printf("wrong! \n");
+    else 
+        printf("right. \n");
 
 
 
