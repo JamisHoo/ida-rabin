@@ -1,20 +1,16 @@
-GCC_FLAG = -O3 
+CFLAGS += -O2
+LDFLAGS += -lpthread
 
-test : main
-	./main -p
+.PHONY: all
+all: server client
 
-main : ec-method.o test.o ec-gf.o
-	gcc -o main ec-method.o test.o ec-gf.o -lpthread $(GCC_FLAG)
+server: server.o ec-method.o ec-gf.o
 
-test.o: test.c
-	gcc -c test.c $(GCC_FLAG)
+client: client.o ec-method.o ec-gf.o
 
-ec-method.o : ec-method.c ec-method.h 
-	gcc -c ec-method.c $(GCC_FLAG) 
+test: test.o ec-method.o ec-gf.o
 
-ec-gf.o : ec-gf.c ec-gf.h
-	gcc -c ec-gf.c $(GCC_FLAG)
-
-clean :
-	rm main ec-method.o ec-gf.o test.o
+.PHONY: clean
+clean:
+	$(RM) server client test server.o client.o test.o ec-method.o ec-gf.o 
 
