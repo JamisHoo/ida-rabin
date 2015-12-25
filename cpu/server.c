@@ -66,14 +66,16 @@ int main(int argc, char** argv) {
     assert(ret >= 0);
     listen(server_sock_fd, 10);
     
-    // send data to clients
+    // build connections
     client_addr_length = sizeof(client_addr[i]);
     for (i = 0; i < NUM_CLIENTS; ++i) {
         client_sock_fd[i] = accept(server_sock_fd, (struct sockaddr*)(client_addr + i), &client_addr_length);
         assert(client_sock_fd[i] >= 0);
+    }
 
+    // send data
+    for (i = 0; i < NUM_CLIENTS; ++i) {
         ret = send(client_sock_fd[i], data + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS, 0);
-        
         assert(ret == DATA_SIZE / NUM_CLIENTS);
         printf("%d client sent. \n", i);
     }
