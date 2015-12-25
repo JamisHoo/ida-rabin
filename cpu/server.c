@@ -33,7 +33,7 @@ void init() {
 }
 
 int main(int argc, char** argv) {
-    int i;
+    int i, j;
     size_t size;
 
     int server_sock_fd;
@@ -72,11 +72,21 @@ int main(int argc, char** argv) {
         client_sock_fd[i] = accept(server_sock_fd, (struct sockaddr*)(client_addr + i), &client_addr_length);
         assert(client_sock_fd[i] >= 0);
 
-        ret = write(client_sock_fd[i], data + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS);
+        ret = send(client_sock_fd[i], data + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS, 0);
         
         assert(ret == DATA_SIZE / NUM_CLIENTS);
         printf("%d client sent. \n", i);
     }
+
+    // receive encoded data from clients
+    for (i = 0; i < NUM_CLIENTS; ++i) 
+        for (j = 0; j < COLUMN / 4 * 5; ++j) {
+            ret = recv(client_sock_fd[i], 
+                       output[j] + DATA_SIZE / NUM_CLIENTS / COLUMN * i, 
+                       DATA_SIZE / NUM_CLIENTS / COLUMN,
+                       MSG_WAITALL);
+            assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
+        }
 
 
     // close sockets

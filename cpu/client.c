@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     assert(ret >= 0);
 
     // receive data from server
-    ret = fully_read(sockfd, data, DATA_SIZE / NUM_CLIENTS);
+    ret = recv(sockfd, data, DATA_SIZE / NUM_CLIENTS, MSG_WAITALL);
     assert(ret == DATA_SIZE / NUM_CLIENTS);
 
     // encode
@@ -63,6 +63,13 @@ int main(int argc, char** argv) {
         size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output, get_nprocs());
     else
         size = ec_method_batch_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output);
+
+    // send encoded data to server
+    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+        ret = send(sockfd, output[i], DATA_SIZE / NUM_CLIENTS / COLUMN, 0);
+        assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
+    }
+
 
     // decode
     if (argc > 1 && !strcmp(argv[1], "-p"))
