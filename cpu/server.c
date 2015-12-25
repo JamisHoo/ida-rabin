@@ -22,18 +22,18 @@ void init() {
     decoded = (uint8_t*)malloc(DATA_SIZE);
     data = (uint8_t*)malloc(DATA_SIZE);
 
-    for(i = 0;i < COLUMN / 4 * 5; i++)
+    for(i = 0; i < COLUMN / 4 * 5; i++)
         output[i] = (uint8_t*)malloc(DATA_SIZE / COLUMN), row[i] = i;
 
     ec_method_initialize();
     
 
-    for(i = 0;i < DATA_SIZE; i++)
+    for(i = 0; i < DATA_SIZE; i++)
         data[i] = rand() % 256;
 }
 
-int main(int argc, char *argv[]) {
-    int i, j;
+int main(int argc, char** argv) {
+    int i;
     size_t size;
 
     int server_sock_fd;

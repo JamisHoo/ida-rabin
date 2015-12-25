@@ -24,28 +24,13 @@ void init() {
     decoded = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
     data = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
 
-    for(i = 0;i < COLUMN / 4 * 5; i++)
+    for(i = 0; i < COLUMN / 4 * 5; i++)
         output[i] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / COLUMN), row[i] = i;
     ec_method_initialize();
 }
 
-int fully_read(int socket, char* data, size_t total_size) {
-    int bytes_read;
-    int current_read;
-    bytes_read = 0;
-
-    while (bytes_read < total_size) {
-        current_read = read(socket, data + bytes_read, total_size - bytes_read);
-        if (current_read < 0) return current_read;
-        bytes_read += current_read;
-    }
-
-    return bytes_read;
-}
-
-
-int main(int argc, char *argv[]) {
-    int i, j;
+int main(int argc, char** argv) {
+    int i;
     size_t size;
 
     int sockfd;
