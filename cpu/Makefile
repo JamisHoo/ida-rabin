@@ -24,5 +24,5 @@ ec-gf.o: ec-gf.c ec-gf.h
 
 .PHONY: clean
 clean:
-	$(RM) server client test server.o client.o test.o ec-method.o ec-gf.o 
+	$(RM) server client test server.o client.o test.o ec-method.o ec-gf.o timer.o
 
