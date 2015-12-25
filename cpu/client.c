@@ -13,6 +13,7 @@
 #include <errno.h>
 
 #include "nodes.h"
+#include "timer.h"
 
 uint8_t* decoded;
 uint8_t* data;
@@ -38,6 +39,8 @@ int main(int argc, char** argv) {
     struct hostent* server;
     int ret;
 
+    double start_time;
+
     // init data
     init();
 
@@ -54,15 +57,20 @@ int main(int argc, char** argv) {
     ret = connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
     assert(ret >= 0);
 
+
     // receive data from server
     ret = recv(sockfd, data, DATA_SIZE / NUM_CLIENTS, MSG_WAITALL);
     assert(ret == DATA_SIZE / NUM_CLIENTS);
+    
+    start_time = timer_start();
 
     // encode
     if (argc > 1 && !strcmp(argv[1], "-p"))
         size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output, get_nprocs());
     else
         size = ec_method_batch_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output);
+
+    timer_end(start_time, "Encode data: %lf \n");
 
     // send encoded data to server
     for (i = 0; i < COLUMN / 4 * 5; ++i) {
@@ -79,11 +87,15 @@ int main(int argc, char** argv) {
         assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
     }
 
+    start_time = timer_start();
+
     // decode
     if (argc > 1 && !strcmp(argv[1], "-p"))
         ec_method_parallel_decode(size, COLUMN, row, output, decoded, get_nprocs());
     else
         ec_method_decode(size, COLUMN, row, output, decoded);
+
+    timer_end(start_time, "Decode data: %lf \n");
 
     // send decoded data to server
     ret = send(sockfd, decoded, DATA_SIZE / NUM_CLIENTS, 0);

@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 
 #include "nodes.h"
+#include "timer.h"
 
 uint8_t* decoded;
 uint8_t* data;
@@ -42,6 +43,8 @@ int main(int argc, char** argv) {
     int client_addr_length;
     int ret;
 
+    double start_time;
+
     assert(DATA_SIZE % NUM_CLIENTS == 0);
     assert(DATA_SIZE / NUM_CLIENTS % COLUMN == 0);
 
@@ -64,21 +67,25 @@ int main(int argc, char** argv) {
 
     ret = bind(server_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
     assert(ret >= 0);
-    listen(server_sock_fd, 10);
+    listen(server_sock_fd, NUM_CLIENTS);
     
     // build connections
     client_addr_length = sizeof(client_addr[i]);
     for (i = 0; i < NUM_CLIENTS; ++i) {
         client_sock_fd[i] = accept(server_sock_fd, (struct sockaddr*)(client_addr + i), &client_addr_length);
         assert(client_sock_fd[i] >= 0);
+        printf("%d client connected. \n", i);
     }
+    
+    start_time = timer_start();
 
     // send data
     for (i = 0; i < NUM_CLIENTS; ++i) {
         ret = send(client_sock_fd[i], data + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS, 0);
         assert(ret == DATA_SIZE / NUM_CLIENTS);
-        printf("%d client sent. \n", i);
     }
+
+    timer_end(start_time, "Send initial data to clients: %lfs \n");
 
     // receive encoded data from clients
     for (i = 0; i < NUM_CLIENTS; ++i) 
@@ -88,7 +95,11 @@ int main(int argc, char** argv) {
                        DATA_SIZE / NUM_CLIENTS / COLUMN,
                        MSG_WAITALL);
             assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
+
+            if (!i && !j) start_time = timer_start();
         }
+
+    start_time = timer_end(start_time, "Receive encoded data from clients: %lfs \n");
 
     // send encoded data to clients
     for (i = 0; i < NUM_CLIENTS; ++i)
@@ -100,11 +111,16 @@ int main(int argc, char** argv) {
             assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
         }
 
+    timer_end(start_time, "Send encoded data to clients: %lfs \n");
+
     // receive decoded data from clients
     for (i = 0; i < NUM_CLIENTS; ++i) {
         ret = recv(client_sock_fd[i], decoded + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS, MSG_WAITALL);
         assert(ret == DATA_SIZE / NUM_CLIENTS);
+        if (!i) start_time = timer_start();
     }
+
+    timer_end(start_time, "Receive decoded data from clients: %lfs \n");
 
     if (memcmp(data, decoded, DATA_SIZE)) 
         printf("wrong! \n");
