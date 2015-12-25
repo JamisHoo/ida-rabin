@@ -4,11 +4,13 @@ LDFLAGS += -lpthread
 .PHONY: all
 all: server client
 
-server: server.o ec-method.o ec-gf.o
+server: server.o ec-method.o ec-gf.o timer.o
 
-client: client.o ec-method.o ec-gf.o
+client: client.o ec-method.o ec-gf.o timer.o
 
 test: test.o ec-method.o ec-gf.o
+
+timer.o: timer.h timer.c
 
 server.o: server.c ec-method.h nodes.h
 
