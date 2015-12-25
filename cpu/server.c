@@ -88,6 +88,26 @@ int main(int argc, char** argv) {
             assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
         }
 
+    // send encoded data to clients
+    for (i = 0; i < NUM_CLIENTS; ++i)
+        for (j = 0; j < COLUMN / 4 * 5; ++j) {
+            ret = send(client_sock_fd[i],
+                       output[j] + DATA_SIZE / NUM_CLIENTS / COLUMN * i,
+                       DATA_SIZE / NUM_CLIENTS / COLUMN,
+                       0);
+            assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
+        }
+
+    // receive decoded data from clients
+    for (i = 0; i < NUM_CLIENTS; ++i) {
+        ret = recv(client_sock_fd[i], decoded + i * DATA_SIZE / NUM_CLIENTS, DATA_SIZE / NUM_CLIENTS, MSG_WAITALL);
+        assert(ret == DATA_SIZE / NUM_CLIENTS);
+    }
+
+    if (memcmp(data, decoded, DATA_SIZE)) 
+        printf("wrong! \n");
+    else 
+        printf("right. \n");
 
     // close sockets
     close(server_sock_fd);

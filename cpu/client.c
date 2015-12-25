@@ -69,7 +69,15 @@ int main(int argc, char** argv) {
         ret = send(sockfd, output[i], DATA_SIZE / NUM_CLIENTS / COLUMN, 0);
         assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
     }
-
+    
+    for (i = 0; i < COLUMN / 4 * 5; ++i)
+        memset(output[i], 0x00, DATA_SIZE / NUM_CLIENTS / COLUMN);
+    
+    // receive encoded data from server
+    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+        ret = recv(sockfd, output[i], DATA_SIZE / NUM_CLIENTS / COLUMN, MSG_WAITALL);
+        assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
+    }
 
     // decode
     if (argc > 1 && !strcmp(argv[1], "-p"))
@@ -77,10 +85,10 @@ int main(int argc, char** argv) {
     else
         ec_method_decode(size, COLUMN, row, output, decoded);
 
-    if (memcmp(data, decoded, DATA_SIZE / NUM_CLIENTS)) 
-        printf("wrong! \n");
-    else 
-        printf("right. \n");
+    // send decoded data to server
+    ret = send(sockfd, decoded, DATA_SIZE / NUM_CLIENTS, 0);
+    assert(ret == DATA_SIZE / NUM_CLIENTS);
+
 
     // close socket
     close(sockfd);
