@@ -24,7 +24,7 @@ void init() {
     decoded = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
     data = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
 
-    for(i = 0; i < COLUMN / 4 * 5; i++)
+    for (i = 0; i < COLUMN / 4 * 5; ++i)
         output[i] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / COLUMN), row[i] = i;
     ec_method_initialize();
 }
