@@ -2,7 +2,6 @@ vpath %.c ec
 vpath %.h ec
 
 CFLAGS += -O2
-CC = gcc
 LDLIBS += -pthread -libverbs -lrdmacm
 
 .PHONY: all
