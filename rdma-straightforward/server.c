@@ -34,6 +34,8 @@ void init() {
     FILE* pfile = fopen("data", "wb");
     fwrite(data, DATA_SIZE, 1, pfile);
     fclose(pfile);
+
+    printf("Init finished\n");
 }
 
 void release() {
