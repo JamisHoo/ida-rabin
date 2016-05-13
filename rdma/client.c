@@ -271,8 +271,6 @@ int main(int argc, char** argv) {
     /* Decoded */
     ec_method_parallel_decode(DATA_SIZE / NUM_CLIENTS / COLUMN, COLUMN, row, output, decoded, get_nprocs());
 
-    assert(!memcmp(data, decoded, DATA_SIZE / NUM_CLIENTS));
-
     start_time = timer_end(start_time, "Decode data: %lfs \n");
 
     /* Send decoded to server */
@@ -307,6 +305,7 @@ int main(int argc, char** argv) {
     timer_end(start_time, "Send decoded data to server: %lfs \n");
     timer_end(start_time2, "Total of decoding: %lfs \n");
     
+    assert(!memcmp(data, decoded, DATA_SIZE / NUM_CLIENTS));
 
     /* Release resources */
 
