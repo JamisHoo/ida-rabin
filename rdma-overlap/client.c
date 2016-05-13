@@ -15,17 +15,17 @@
 #include "timer.h"
 
 uint8_t* data;
-uint8_t* output[COLUMN / 4 * 5];
+uint8_t* output[ROW];
 uint8_t* decoded;
-uint32_t row[COLUMN / 4 * 5];
+uint32_t row[ROW];
 
 void init() {
     int i;
     data = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
     decoded = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
 
-    output[0] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / 4 * 5);
-    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+    output[0] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / COLUMN * ROW);
+    for (i = 0; i < ROW; ++i) {
         output[i] = output[0] + DATA_SIZE / NUM_CLIENTS / COLUMN * i;
         row[i] = i;
     }
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
                          IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
     assert(mr_data);
 
-    mr_output = ibv_reg_mr(pd, output[0], DATA_SIZE / NUM_CLIENTS / 4 * 5, 
+    mr_output = ibv_reg_mr(pd, output[0], DATA_SIZE / NUM_CLIENTS / COLUMN * ROW, 
                            IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
     assert(mr_output);
 
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
     /* Post receive for output */
 
     sge_output.addr = (uintptr_t)output[0];
-    sge_output.length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+    sge_output.length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
     sge_output.lkey = mr_output->lkey;
 
     recv_wr2.sg_list = &sge_output;
@@ -213,14 +213,14 @@ int main(int argc, char** argv) {
     start_time = timer_start();
 
     /* Encode */
-    size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output, get_nprocs());
+    size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, ROW, data, output, get_nprocs());
     assert(size == DATA_SIZE / NUM_CLIENTS / COLUMN);
 
     start_time = timer_end(start_time, "Encode time: %lfs \n");
 
     /* Send output to server */
     sge_send.addr = (uintptr_t)output[0];
-    sge_send.length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+    sge_send.length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
     sge_send.lkey = mr_output->lkey;
 
     send_wr.wr_id = 2;

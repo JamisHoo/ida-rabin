@@ -13,7 +13,7 @@
 uint8_t* data;
 uint8_t* decoded;
 uint8_t* output[NUM_CLIENTS];
-uint32_t row[COLUMN / 4 * 5];
+uint32_t row[ROW];
 
 inline int fastrand() {
     static g_seed = 1;
@@ -30,15 +30,17 @@ void init() {
     data = (uint8_t*)malloc(DATA_SIZE);
     decoded = (uint8_t*)malloc(DATA_SIZE);
 
-    output[0] = (uint8_t*)malloc(DATA_SIZE / 4 * 5);
+    output[0] = (uint8_t*)malloc(DATA_SIZE / COLUMN * ROW);
     for (i = 0; i < NUM_CLIENTS; ++i) 
-        output[i] = output[0] + DATA_SIZE / 4 * 5 / NUM_CLIENTS * i;
+        output[i] = output[0] + DATA_SIZE / COLUMN * ROW / NUM_CLIENTS * i;
 
-    for (i = 0; i < COLUMN / 4 * 5; ++i) 
+    for (i = 0; i < ROW; ++i) 
         row[i] = i;
 
     for (i = 0; i < DATA_SIZE; ++i)
         data[i] = fastrand();
+
+    printf("Init finished\n");
 }
 
 void release() {
@@ -127,7 +129,7 @@ int main(int argc, char** argv) {
                                 IBV_ACCESS_LOCAL_WRITE); 
         assert(mr_data[i]);
 
-        mr_output[i] = ibv_reg_mr(pd[i], output[i], DATA_SIZE / NUM_CLIENTS / 4 * 5,
+        mr_output[i] = ibv_reg_mr(pd[i], output[i], DATA_SIZE / NUM_CLIENTS / COLUMN * ROW,
                                   IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
         assert(mr_output[i]);
 
@@ -150,7 +152,7 @@ int main(int argc, char** argv) {
         /* Post receive for output before accepting connection */
         
         sge_output[i].addr = (uintptr_t)output[i];
-        sge_output[i].length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+        sge_output[i].length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
         sge_output[i].lkey = mr_output[i]->lkey;
 
         recv_wr[i].sg_list = &sge_output[i];
@@ -256,7 +258,7 @@ int main(int argc, char** argv) {
     for (i = 0; i < NUM_CLIENTS; ++i) {
         /* Send output to clients */
         sge_send[i].addr = (uintptr_t)(output[i]);
-        sge_send[i].length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+        sge_send[i].length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
         sge_send[i].lkey = mr_output[i]->lkey;
 
         send_wr[i].wr_id = 3;
