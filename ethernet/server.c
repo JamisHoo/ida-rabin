@@ -15,15 +15,15 @@
 
 uint8_t* decoded;
 uint8_t* data;
-uint8_t* output[COLUMN / 4 * 5];
-uint32_t row[COLUMN / 4 * 5];
+uint8_t* output[ROW];
+uint32_t row[ROW];
 
 void init() {
     int i;
     decoded = (uint8_t*)malloc(DATA_SIZE);
     data = (uint8_t*)malloc(DATA_SIZE);
 
-    for (i = 0; i < COLUMN / 4 * 5; ++i)
+    for (i = 0; i < ROW; ++i)
         output[i] = (uint8_t*)malloc(DATA_SIZE / COLUMN), row[i] = i;
 
     ec_method_initialize();
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     int client_addr_length;
     int ret;
 
-    double start_time;
+    double start_time, total_time;
 
     assert(DATA_SIZE % NUM_CLIENTS == 0);
     assert(DATA_SIZE / NUM_CLIENTS % COLUMN == 0);
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
         printf("%d client connected. \n", i);
     }
     
-    start_time = timer_start();
+    total_time = start_time = timer_start();
 
     // send data
     for (i = 0; i < NUM_CLIENTS; ++i) {
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 
     // receive encoded data from clients
     for (i = 0; i < NUM_CLIENTS; ++i) 
-        for (j = 0; j < COLUMN / 4 * 5; ++j) {
+        for (j = 0; j < ROW; ++j) {
             ret = recv(client_sock_fd[i], 
                        output[j] + DATA_SIZE / NUM_CLIENTS / COLUMN * i, 
                        DATA_SIZE / NUM_CLIENTS / COLUMN,
@@ -100,10 +100,11 @@ int main(int argc, char** argv) {
         }
 
     start_time = timer_end(start_time, "Receive encoded data from clients: %lfs \n");
+    total_time = timer_end(total_time, "Encode total time: %lfs \n");
 
     // send encoded data to clients
     for (i = 0; i < NUM_CLIENTS; ++i)
-        for (j = 0; j < COLUMN / 4 * 5; ++j) {
+        for (j = 0; j < ROW; ++j) {
             ret = send(client_sock_fd[i],
                        output[j] + DATA_SIZE / NUM_CLIENTS / COLUMN * i,
                        DATA_SIZE / NUM_CLIENTS / COLUMN,
@@ -121,6 +122,7 @@ int main(int argc, char** argv) {
     }
 
     timer_end(start_time, "Receive decoded data from clients: %lfs \n");
+    timer_end(total_time, "Decde total time: %lfs \n");
 
     if (memcmp(data, decoded, DATA_SIZE)) 
         printf("wrong! \n");

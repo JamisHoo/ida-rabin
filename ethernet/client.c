@@ -17,15 +17,15 @@
 
 uint8_t* decoded;
 uint8_t* data;
-uint8_t* output[COLUMN / 4 * 5];
-uint32_t row[COLUMN / 4 * 5];
+uint8_t* output[ROW];
+uint32_t row[ROW];
 
 void init() {
     int i;
     decoded = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
     data = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
 
-    for (i = 0; i < COLUMN / 4 * 5; ++i)
+    for (i = 0; i < ROW; ++i)
         output[i] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / COLUMN), row[i] = i;
     ec_method_initialize();
 }
@@ -66,23 +66,23 @@ int main(int argc, char** argv) {
 
     // encode
     if (argc > 1 && !strcmp(argv[1], "-p"))
-        size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output, get_nprocs());
+        size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN,ROW, data, output, get_nprocs());
     else
-        size = ec_method_batch_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output);
+        size = ec_method_batch_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, ROW, data, output);
 
     timer_end(start_time, "Encode data: %lf \n");
 
     // send encoded data to server
-    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+    for (i = 0; i < ROW; ++i) {
         ret = send(sockfd, output[i], DATA_SIZE / NUM_CLIENTS / COLUMN, 0);
         assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
     }
     
-    for (i = 0; i < COLUMN / 4 * 5; ++i)
+    for (i = 0; i < ROW; ++i)
         memset(output[i], 0x00, DATA_SIZE / NUM_CLIENTS / COLUMN);
     
     // receive encoded data from server
-    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+    for (i = 0; i < ROW; ++i) {
         ret = recv(sockfd, output[i], DATA_SIZE / NUM_CLIENTS / COLUMN, MSG_WAITALL);
         assert(ret == DATA_SIZE / NUM_CLIENTS / COLUMN);
     }

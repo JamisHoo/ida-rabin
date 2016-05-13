@@ -5,19 +5,20 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/sysinfo.h>
-#define DATA_SIZE (1<<24)
-#define COLUMN (64)
+#define DATA_SIZE (2016ll << 20)
+#define COLUMN (48)
+#define ROW (COLUMN + 16)
 
 uint8_t *decoded,*data;
-uint8_t * output[COLUMN/4*5];
-uint32_t row[COLUMN/4*5];
+uint8_t * output[ROW];
+uint32_t row[ROW];
 
 void init(){
     int i;
     decoded = (uint8_t *)malloc(DATA_SIZE);
     data = (uint8_t *)malloc(DATA_SIZE);
 
-    for(i=0;i<COLUMN/4*5;i++)
+    for(i=0;i<ROW;i++)
         output[i] = (uint8_t *)malloc(DATA_SIZE/COLUMN),row[i]=i;
     ec_method_initialize();
     
@@ -39,9 +40,9 @@ int main(int argc,char *argv[]){
     gettimeofday(&begin,NULL);
 
     if(argc > 1 && !strcmp(argv[1],"-p"))
-        size = ec_method_batch_parallel_encode(DATA_SIZE, COLUMN, COLUMN/4*5, data, output,get_nprocs());
+        size = ec_method_batch_parallel_encode(DATA_SIZE, COLUMN, ROW, data, output,get_nprocs());
      else
-        size = ec_method_batch_encode(DATA_SIZE, COLUMN, COLUMN/4*5, data, output);
+        size = ec_method_batch_encode(DATA_SIZE, COLUMN, ROW, data, output);
 
     gettimeofday(&end,NULL);
     timersub(&end,&begin,&result);
