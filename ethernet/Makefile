@@ -1,4 +1,4 @@
-CFLAGS += -O2
+CFLAGS += -O3
 LDFLAGS += -lpthread
 
 .PHONY: all
