@@ -271,8 +271,6 @@ int main(int argc, char** argv) {
 
     timer_end(start_time, "Decode time: %lfs \n");
 
-    assert(!memcmp(data, decoded, DATA_SIZE / NUM_CLIENTS));
-
     start_time = timer_start();
 
     /* Send decoded to server */
@@ -305,6 +303,8 @@ int main(int argc, char** argv) {
     assert(wc.status == IBV_WC_SUCCESS);
 
     timer_end(start_time, "Send decoded to server: %lfs \n"); 
+
+    assert(!memcmp(data, decoded, DATA_SIZE / NUM_CLIENTS));
 
     /* Release resources */
 
