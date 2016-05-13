@@ -15,17 +15,17 @@
 #include "timer.h"
 
 uint8_t* data;
-uint8_t* output[COLUMN / 4 * 5];
+uint8_t* output[ROW];
 uint8_t* decoded;
-uint32_t row[COLUMN / 4 * 5];
+uint32_t row[ROW];
 
 void init() {
     int i;
     data = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
     decoded = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS);
 
-    output[0] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / 4 * 5);
-    for (i = 0; i < COLUMN / 4 * 5; ++i) {
+    output[0] = (uint8_t*)malloc(DATA_SIZE / NUM_CLIENTS / COLUMN * ROW);
+    for (i = 0; i < ROW; ++i) {
         output[i] = output[0] + DATA_SIZE / NUM_CLIENTS / COLUMN * i;
         row[i] = i;
     }
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     mr = ibv_reg_mr(pd, data, DATA_SIZE / NUM_CLIENTS, IBV_ACCESS_LOCAL_WRITE);
     assert(mr);
 
-    mr2 = ibv_reg_mr(pd, output[0], DATA_SIZE / NUM_CLIENTS / 4 * 5, IBV_ACCESS_LOCAL_WRITE);
+    mr2 = ibv_reg_mr(pd, output[0], DATA_SIZE / NUM_CLIENTS / COLUMN * ROW, IBV_ACCESS_LOCAL_WRITE);
     assert(mr2);
 
     mr3 = ibv_reg_mr(pd, decoded, DATA_SIZE / NUM_CLIENTS, IBV_ACCESS_LOCAL_WRITE);
@@ -195,14 +195,14 @@ int main(int argc, char** argv) {
     start_time = timer_end(start_time, "Read data from server: %lfs \n");
 
     /* Encode */
-    size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, COLUMN / 4 * 5, data, output, get_nprocs());
+    size = ec_method_batch_parallel_encode(DATA_SIZE / NUM_CLIENTS, COLUMN, ROW, data, output, get_nprocs());
     assert(size == DATA_SIZE / NUM_CLIENTS / COLUMN);
 
     start_time = timer_end(start_time, "Encode data: %lfs \n");
 
     /* Send data to server */
     sge.addr = (uintptr_t)output[0];
-    sge.length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+    sge.length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
     sge.lkey = mr2->lkey;
 
     send_wr.wr_id = 2;
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
     /* Read output from server */
 
     sge.addr = (uintptr_t)output[0];
-    sge.length = DATA_SIZE / NUM_CLIENTS * 4 / 5;
+    sge.length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
     sge.lkey = mr2->lkey;
 
     send_wr.wr_id = 3;

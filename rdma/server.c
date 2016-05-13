@@ -14,7 +14,7 @@
 uint8_t* data;
 uint8_t* decoded;
 uint8_t* output[NUM_CLIENTS];
-uint32_t row[COLUMN / 4 * 5];
+uint32_t row[ROW];
 
 void init() {
     int i;
@@ -25,17 +25,19 @@ void init() {
     data = (uint8_t*)malloc(DATA_SIZE);
     decoded = (uint8_t*)malloc(DATA_SIZE);
 
-    output[0] = (uint8_t*)malloc(DATA_SIZE / 4 * 5);
+    output[0] = (uint8_t*)malloc(DATA_SIZE / COLUMN * ROW);
     for (i = 0; i < NUM_CLIENTS; ++i) 
-        output[i] = output[0] + DATA_SIZE / 4 * 5 / NUM_CLIENTS * i;
+        output[i] = output[0] + DATA_SIZE / COLUMN * ROW / NUM_CLIENTS * i;
 
-    for (i = 0; i < COLUMN / 4 * 5; ++i) 
+    for (i = 0; i < ROW; ++i) 
         row[i] = i;
 
     // ec_method_initialize();
 
     for (i = 0; i < DATA_SIZE; ++i)
         data[i] = rand();
+
+    printf("Init finished\n");
 }
 
 void release() {
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
                            IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ); 
         assert(mr[i]);
 
-        mr2[i] = ibv_reg_mr(pd[i], output[i], DATA_SIZE / NUM_CLIENTS / 4 * 5,
+        mr2[i] = ibv_reg_mr(pd[i], output[i], DATA_SIZE / NUM_CLIENTS / COLUMN * ROW,
                             IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE);
         assert(mr2[i]);
 
@@ -144,7 +146,7 @@ int main(int argc, char** argv) {
         /* Post receive for output before accepting connection */
         
         sge[i].addr = (uintptr_t)output[i];
-        sge[i].length = DATA_SIZE / NUM_CLIENTS / 4 * 5;
+        sge[i].length = DATA_SIZE / NUM_CLIENTS / COLUMN * ROW;
         sge[i].lkey = mr2[i]->lkey;
 
         recv_wr[i].sg_list = &sge[i];

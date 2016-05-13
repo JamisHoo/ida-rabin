@@ -5,11 +5,12 @@
 
 int server_port = 5000;
 const char* server_port_string = "5000";
-const char* server_ip = "10.0.0.4";
+const char* server_ip = "192.168.50.11";
 
 #define RESOLVE_TIMEOUT_MS (5000)
-#define DATA_SIZE ((1 << 28) * 3)
-#define COLUMN (64)
+#define DATA_SIZE (2016ll << 20)
+#define COLUMN (48)
+#define ROW (COLUMN + 16)
 
 struct rdma_private_data {
     int index;
