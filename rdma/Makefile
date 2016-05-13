@@ -1,7 +1,7 @@
 vpath %.c ec
 vpath %.h ec
 
-CFLAGS += -O2
+CFLAGS += -O3
 LDLIBS += -pthread -libverbs -lrdmacm
 
 .PHONY: all
